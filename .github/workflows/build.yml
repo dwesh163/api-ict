@@ -31,5 +31,5 @@ jobs:
               with:
                   push: true
                   tags: |
-                      ${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ env.latest_release }}
-                      ${{ github.repository_owner }}/${{ github.event.repository.name }}:latest
+                      ${{ github.repository_owner }}/{{ github.event.repository.name | toLowerCase() }}:${{ env.latest_release }}
+                      ${{ github.repository_owner }}/{{ github.event.repository.name | toLowerCase() }}:latest
