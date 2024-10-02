@@ -17,6 +17,9 @@ jobs:
                   echo "Latest release: $latest_release"
                   echo "latest_release=$latest_release" >> $GITHUB_ENV
 
+            - name: Convert repository name to lowercase
+              run: echo "repository_name=$(echo '${{ github.event.repository.name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
             - name: Login to Docker Hub
               uses: docker/login-action@v3
               with:
@@ -31,5 +34,5 @@ jobs:
               with:
                   push: true
                   tags: |
-                      ${{ github.repository_owner }}/${{ github.event.repository.name | toLowerCase() }}:${{ env.latest_release }}
-                      ${{ github.repository_owner }}/${{ github.event.repository.name | toLowerCase() }}:latest
+                      ${{ github.repository_owner }}/${{ env.repository_name }}:${{ env.latest_release }}
+                      ${{ github.repository_owner }}/${{ env.repository_name }}:latest
