@@ -17,6 +17,7 @@ jobs:
               uses: actions/checkout@v3
 
             - name: Increment Patch Version
+              id: new_version
               run: |
                   # Split the version into components (major, minor, patch)
                   IFS='.' read -r major minor patch <<< "${{ env.latest_release }}"
@@ -25,16 +26,6 @@ jobs:
                   # Remove the 'v' prefix if present
                   new_version="${new_version#v}"
                   echo "New version: version : $new_version"
-                  echo "new_version=$new_version" >> $GITHUB_ENV
-
-            - name: Increment Patch Version
-              id: new_version
-              run: |
-                  # Split the version into components (major, minor, patch)
-                  IFS='.' read -r major minor patch <<< "${{ env.latest_release }}"
-                  # Increment the patch version
-                  new_version="$major.$minor.$((patch + 1))"
-                  echo "New version: version : $new_version.replace('v', '')"
                   echo "new_version=$new_version" >> $GITHUB_ENV
 
             - name: Get Time of Last Successful Workflow Run
