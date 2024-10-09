@@ -56,8 +56,6 @@ jobs:
               id: changelog
               run: |
                   changelog=$(git log --since="${{ env.last_run_time }}" --pretty=format:"* [%h](https://github.com/${{ github.repository }}/commit/%H) %s")
-                  echo "Changelog: $changelog"
-                  echo "Last run time :  ${{ env.last_run_time }}"
                   if [ -z "$changelog" ]; then
                     changelog="No changes."
                   fi
@@ -71,7 +69,11 @@ jobs:
             - name: Update CHANGELOG.md
               run: |
                   # Créer le contenu pour la nouvelle version
-                  new_changelog="## Version : ${{ env.new_version }}\n${{ env.changelog }}\n"
+                  new_changelog="## Version : ${{ env.new_version }}"
+                  echo "${{ env.changelog }}" >> new_changelog
+
+                  echo "New changelog: $new_changelog"  
+                  echo "Changelog: ${{ env.changelog }}"
 
                   # Préfixer ce nouveau contenu au début du fichier CHANGELOG.md
                   if [ -f CHANGELOG.md ]; then
