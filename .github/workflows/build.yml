@@ -58,10 +58,21 @@ jobs:
 
             - name: Update CHANGELOG.md
               run: |
-                  echo "## Version : ${{ env.new_version }}" >> CHANGELOG.md
-                  echo "${{ env.changelog }}" >> CHANGELOG.md
+                  # Créer le contenu pour la nouvelle version
+                  new_changelog="## Version : ${{ env.new_version }}\n${{ env.changelog }}\n"
+
+                  # Préfixer ce nouveau contenu au début du fichier CHANGELOG.md
+                  if [ -f CHANGELOG.md ]; then
+                    echo -e "$new_changelog$(cat CHANGELOG.md)" > CHANGELOG.md
+                  else
+                    echo -e "$new_changelog" > CHANGELOG.md
+                  fi
+
+                  # Configuration Git pour le commit
                   git config user.name "github-actions[bot]"
                   git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+                  # Ajouter, committer et pousser les changements
                   git add CHANGELOG.md
                   git commit -m "Update changelog for version : ${{ env.new_version }}"
                   git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
