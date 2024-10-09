@@ -30,7 +30,7 @@ jobs:
                   IFS='.' read -r major minor patch <<< "${{ env.latest_release }}"
                   # Increment the patch version
                   new_version="$major.$minor.$((patch + 1))"
-                  echo "New version: $new_version"
+                  echo "New version: version : $new_version.replace('v', '')"
                   echo "new_version=$new_version" >> $GITHUB_ENV
 
             - name: Get Time of Last Successful Workflow Run
@@ -54,29 +54,28 @@ jobs:
                   fi
                   echo "Changelog:"
                   echo "$changelog"
-                  echo "changelog=$changelog" >> $GITHUB_ENV
+                  echo "changelog=version : ${{ env.new_version }}\n$changelog" >> $GITHUB_ENV
 
             - name: Update CHANGELOG.md
               run: |
-                  echo "## Version ${{ env.new_version }}" >> CHANGELOG.md
+                  echo "## Version : ${{ env.new_version }}" >> CHANGELOG.md
                   echo "${{ env.changelog }}" >> CHANGELOG.md
                   git config user.name "github-actions[bot]"
                   git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
                   git add CHANGELOG.md
-                  git commit -m "Update changelog for version ${{ env.new_version }}"
+                  git commit -m "Update changelog for version : ${{ env.new_version }}"
                   git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
 
             - name: Create GitHub Release
               uses: actions/create-release@v1
               with:
-                  tag_name: ${{ env.new_version }}
-                  release_name: ${{ env.new_version }}
+                  tag_name: 'v${{ env.new_version }}'
+                  release_name: 'version : ${{ env.new_version }}'
                   body: ${{ env.changelog }}
                   draft: false
                   prerelease: false
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
             - name: Convert repository name to lowercase
               run: echo "repository_name=$(echo '${{ github.event.repository.name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
