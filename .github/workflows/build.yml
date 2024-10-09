@@ -63,7 +63,7 @@ jobs:
                   git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
                   git add CHANGELOG.md
                   git commit -m "Update changelog for version ${{ env.new_version }}"
-                  git push
+                  git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
 
             - name: Create GitHub Release
               uses: actions/create-release@v1
