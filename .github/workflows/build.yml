@@ -30,11 +30,23 @@ jobs:
                   echo "New version: $new_version"
                   echo "new_version=$new_version" >> $GITHUB_ENV
 
+            - name: Get Time of Last Successful Workflow Run
+              id: last_run_time
+              run: |
+                  last_run_time=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                    "https://api.github.com/repos/${{ github.repository }}/actions/runs?status=success&branch=${{ github.ref_name }}" \
+                    | jq -r '.workflow_runs[0].updated_at')
+                  if [ -z "$last_run_time" ]; then
+                    last_run_time=$(git log -1 --pretty=format:%cI)
+                  fi
+                  echo "Last run time: $last_run_time"
+                  echo "last_run_time=$last_run_time" >> $GITHUB_ENV
+
             - name: Generate Changelog
               id: changelog
               run: |
-                  # Get commits since the last release
-                  changelog=$(git log ${{ env.latest_release }}..HEAD --pretty=format:"* %h %s")
+                  # Get commits since the last successful workflow run
+                  changelog=$(git log --since="${{ env.last_run_time }}" --pretty=format:"* %h %s")
                   if [ -z "$changelog" ]; then
                     changelog="No changes."
                   fi
