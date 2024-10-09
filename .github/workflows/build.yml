@@ -56,9 +56,12 @@ jobs:
                   if [ -z "$changelog" ]; then
                     changelog="No changes."
                   fi
-                  echo "Changelog:"
-                  echo "$changelog"
-                  echo "changelog=version : ${{ env.new_version }}\n$changelog" >> $GITHUB_ENV
+                  # Utilisation d'un bloc multi-lignes pour bien formater le changelog en Markdown
+                  echo "formatted_changelog<<EOF" >> $GITHUB_ENV
+                  echo "## Version : ${{ env.new_version }}" >> $GITHUB_ENV
+                  echo "" >> $GITHUB_ENV
+                  echo "$changelog" >> $GITHUB_ENV
+                  echo "EOF" >> $GITHUB_ENV
 
             - name: Update CHANGELOG.md
               run: |
