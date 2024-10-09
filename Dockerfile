@@ -12,7 +12,6 @@ RUN cargo build --locked --release
 FROM alpine:3.20
 
 RUN apk add --no-cache libgcc libstdc++
-
 COPY --from=builder /srv/app/target/release/$APP_NAME /bin/server
 
 EXPOSE 8000
