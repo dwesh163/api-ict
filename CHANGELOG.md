@@ -1,3 +1,5 @@
+## Version : ..1
+
 ## Version v1.3.0
 * f760f88 Refactor build workflow to grant write permission to contents
 ## Version v1.4.0
@@ -5,4 +7,5 @@
 ## Version v1.4.1
 * [f9fc591](https://github.com/dwesh163/API-ICT/commit/f9fc591587a5c7187ce6929f73a96e8bd36c57bf) Refactor build workflow to increment patch version in the generated changelog
 ## Version : v1.4.2
-version : v1.4.2\n* [41b57ed](https://github.com/dwesh163/API-ICT/commit/41b57ede2a247feb277986c128f7a11ee4bd4b4c) Refactor build workflow to include commit links in the generated changelog
+version : v1.4.2
+* [41b57ed](https://github.com/dwesh163/API-ICT/commit/41b57ede2a247feb277986c128f7a11ee4bd4b4c) Refactor build workflow to include commit links in the generated changelog
