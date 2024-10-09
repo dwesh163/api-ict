@@ -23,11 +23,13 @@ jobs:
                   echo "Latest release: $latest_release"
                   echo "latest_release=$latest_release" >> $GITHUB_ENV
 
-            - name: Increment Minor Version
+            - name: Increment Patch Version
               id: new_version
               run: |
+                  # Split the version into components (major, minor, patch)
                   IFS='.' read -r major minor patch <<< "${{ env.latest_release }}"
-                  new_version="$major.$((minor + 1)).0"
+                  # Increment the patch version
+                  new_version="$major.$minor.$((patch + 1))"
                   echo "New version: $new_version"
                   echo "new_version=$new_version" >> $GITHUB_ENV
 
