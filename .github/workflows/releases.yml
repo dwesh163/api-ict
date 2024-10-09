@@ -56,6 +56,8 @@ jobs:
               id: changelog
               run: |
                   changelog=$(git log --since="${{ env.last_run_time }}" --pretty=format:"* [%h](https://github.com/${{ github.repository }}/commit/%H) %s")
+                  echo "Changelog: $changelog"
+                  echo "Last run time :  ${{ env.last_run_time }}"
                   if [ -z "$changelog" ]; then
                     changelog="No changes."
                   fi
