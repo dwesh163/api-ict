@@ -46,7 +46,7 @@ jobs:
             - name: Generate Changelog
               id: changelog
               run: |
-                  changelog=$(git log --since="${{ env.last_run_time }}" --pretty=format:"* %h %s")
+                  changelog=$(git log --since="${{ env.last_run_time }}" --pretty=format:"* [%h](https://github.com/${{ github.repository }}/commit/%H) %s")
                   if [ -z "$changelog" ]; then
                     changelog="No changes."
                   fi
