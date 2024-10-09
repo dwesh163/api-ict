@@ -20,11 +20,19 @@ jobs:
               id: new_version
               run: |
                   # Split the version into components (major, minor, patch)
-                  IFS='.' read -r major minor patch <<< "${{ env.latest_release }}"
+                  version="${{ env.latest_release }}"
+
+                  # Remove the 'v' prefix if present
+                  if [[ $version == v* ]]; then
+                    version="${version#v}"
+                  fi
+
+                  # Split the version into components
+                  IFS='.' read -r major minor patch <<< "$version"
+
                   # Increment the patch version
                   new_version="$major.$minor.$((patch + 1))"
-                  # Remove the 'v' prefix if present
-                  new_version="${new_version#v}"
+
                   echo "New version: version : $new_version"
                   echo "new_version=$new_version" >> $GITHUB_ENV
 
