@@ -4,10 +4,6 @@ on:
     push:
         branches:
             - main
-
-permissions:
-    contents: write # Grant write permission to the contents
-
 jobs:
     build:
         runs-on: ubuntu-latest
@@ -40,63 +36,6 @@ jobs:
                   # Exporter la nouvelle version dans l'environnement GitHub
                   echo "new_version=$new_version" >> $GITHUB_ENV
 
-            - name: Get Time of Last Successful Workflow Run
-              id: last_run_time
-              run: |
-                  last_run_time=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                    "https://api.github.com/repos/${{ github.repository }}/actions/runs?status=success&branch=${{ github.ref_name }}" \
-                    | jq -r '.workflow_runs[0].updated_at')
-                  if [ -z "$last_run_time" ]; then
-                    last_run_time=$(git log -1 --pretty=format:%cI)
-                  fi
-                  echo "Last run time: $last_run_time"
-                  echo "last_run_time=$last_run_time" >> $GITHUB_ENV
-
-            - name: Generate Changelog
-              id: changelog
-              run: |
-                  changelog=$(git log --since="${{ env.last_run_time }}" --pretty=format:"* [%h](https://github.com/${{ github.repository }}/commit/%H) %s")
-                  if [ -z "$changelog" ]; then
-                    changelog="No changes."
-                  fi
-                  # Utilisation d'un bloc multi-lignes pour bien formater le changelog en Markdown
-                  echo "formatted_changelog<<EOF" >> $GITHUB_ENV
-                  echo "## Version : ${{ env.new_version }}" >> $GITHUB_ENV
-                  echo "" >> $GITHUB_ENV
-                  echo "$changelog" >> $GITHUB_ENV
-                  echo "EOF" >> $GITHUB_ENV
-
-            - name: Update CHANGELOG.md
-              run: |
-                  # Créer le contenu pour la nouvelle version
-                  new_changelog="## Version : ${{ env.new_version }}\n${{ env.changelog }}\n"
-
-                  # Préfixer ce nouveau contenu au début du fichier CHANGELOG.md
-                  if [ -f CHANGELOG.md ]; then
-                    echo -e "$new_changelog$(cat CHANGELOG.md)" > CHANGELOG.md
-                  else
-                    echo -e "$new_changelog" > CHANGELOG.md
-                  fi
-
-                  # Configuration Git pour le commit
-                  git config user.name "github-actions[bot]"
-                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-                  # Ajouter, committer et pousser les changements
-                  git add CHANGELOG.md
-                  git commit -m "Update changelog for version : ${{ env.new_version }}"
-                  git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
-
-            - name: Create GitHub Release
-              uses: actions/create-release@v1
-              with:
-                  tag_name: 'v${{ env.new_version }}'
-                  release_name: 'version : ${{ env.new_version }}'
-                  body: ${{ env.changelog }}
-                  draft: false
-                  prerelease: false
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             - name: Convert repository name to lowercase
               run: echo "repository_name=$(echo '${{ github.event.repository.name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
