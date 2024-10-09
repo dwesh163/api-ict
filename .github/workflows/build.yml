@@ -23,9 +23,7 @@ jobs:
             - name: Increment Minor Version
               id: new_version
               run: |
-                  # Split the version into components
                   IFS='.' read -r major minor patch <<< "${{ env.latest_release }}"
-                  # Increment the minor version
                   new_version="$major.$((minor + 1)).0"
                   echo "New version: $new_version"
                   echo "new_version=$new_version" >> $GITHUB_ENV
@@ -45,7 +43,6 @@ jobs:
             - name: Generate Changelog
               id: changelog
               run: |
-                  # Get commits since the last successful workflow run
                   changelog=$(git log --since="${{ env.last_run_time }}" --pretty=format:"* %h %s")
                   if [ -z "$changelog" ]; then
                     changelog="No changes."
@@ -56,7 +53,6 @@ jobs:
 
             - name: Update CHANGELOG.md
               run: |
-                  # Append to CHANGELOG.md
                   echo "## Version ${{ env.new_version }}" >> CHANGELOG.md
                   echo "${{ env.changelog }}" >> CHANGELOG.md
                   git config user.name "github-actions[bot]"
