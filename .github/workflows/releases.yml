@@ -47,7 +47,7 @@ jobs:
                     "https://api.github.com/repos/${{ github.repository }}/actions/runs?status=success&branch=${{ github.ref_name }}" \
                     | jq -r '.workflow_runs[0].updated_at')
                   if [ -z "$last_run_time" ]; then
-                    last_run_time=$(git log -1 --pretty=format:%cI)
+                    last_run_time=$(git log --pretty=format:%cI)
                   fi
                   echo "Last run time: $last_run_time"
                   echo "last_run_time=$last_run_time" >> $GITHUB_ENV
