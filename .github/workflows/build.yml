@@ -5,6 +5,9 @@ on:
         branches:
             - main
 
+permissions:
+    contents: write # Grant write permission to the contents
+
 jobs:
     build:
         runs-on: ubuntu-latest
