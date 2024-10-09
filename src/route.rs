@@ -27,7 +27,7 @@ async fn index(query: web::Query<QueryParams>) -> impl Responder {
         .json(modules)
 }
 
-#[get("/{id}")]
+#[get("/module/{id}")]
 async fn get_module_by_id(id: web::Path<String>, query: web::Query<QueryParams>) -> impl Responder {
     let module = match get_module(&id.into_inner(), &query.lang).await {
         Ok(module) => module,
