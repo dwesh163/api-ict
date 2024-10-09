@@ -10,12 +10,59 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+
             - name: Get Latest Release
               id: get_release
               run: |
-                  latest_release=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .name || echo "0.1.0")
+                  latest_release=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name || echo "0.1.0")
                   echo "Latest release: $latest_release"
                   echo "latest_release=$latest_release" >> $GITHUB_ENV
+
+            - name: Increment Minor Version
+              id: new_version
+              run: |
+                  # Split the version into components
+                  IFS='.' read -r major minor patch <<< "${{ env.latest_release }}"
+                  # Increment the minor version
+                  new_version="$major.$((minor + 1)).0"
+                  echo "New version: $new_version"
+                  echo "new_version=$new_version" >> $GITHUB_ENV
+
+            - name: Generate Changelog
+              id: changelog
+              run: |
+                  # Get commits since the last release
+                  changelog=$(git log ${{ env.latest_release }}..HEAD --pretty=format:"* %h %s")
+                  if [ -z "$changelog" ]; then
+                    changelog="No changes."
+                  fi
+                  echo "Changelog:"
+                  echo "$changelog"
+                  echo "changelog=$changelog" >> $GITHUB_ENV
+
+            - name: Update CHANGELOG.md
+              run: |
+                  # Append to CHANGELOG.md
+                  echo "## Version ${{ env.new_version }}" >> CHANGELOG.md
+                  echo "${{ env.changelog }}" >> CHANGELOG.md
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git add CHANGELOG.md
+                  git commit -m "Update changelog for version ${{ env.new_version }}"
+                  git push
+
+            - name: Create GitHub Release
+              uses: actions/create-release@v1
+              with:
+                  tag_name: ${{ env.new_version }}
+                  release_name: ${{ env.new_version }}
+                  body: ${{ env.changelog }}
+                  draft: false
+                  prerelease: false
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Convert repository name to lowercase
               run: echo "repository_name=$(echo '${{ github.event.repository.name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
@@ -34,5 +81,5 @@ jobs:
               with:
                   push: true
                   tags: |
-                      ${{ github.repository_owner }}/${{ env.repository_name }}:${{ env.latest_release }}
+                      ${{ github.repository_owner }}/${{ env.repository_name }}:${{ env.new_version }}
                       ${{ github.repository_owner }}/${{ env.repository_name }}:latest
