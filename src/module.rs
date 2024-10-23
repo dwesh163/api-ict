@@ -17,31 +17,27 @@ pub async fn get_documentation() -> Result<Value, Box<dyn std::error::Error>> {
             {
                 "url": "/",
                 "method": "GET",
-                "description": "Retrieve the API documentation for available routes and usage."
             },
             {
                 "url": "/jobs",
                 "method": "GET",
-                "description": "Retrieve a list of Job with their IDs.",
             },
             {
                 "url": "/modules",
                 "method": "GET",
-                "description": "Get a list of modules filtered by job ID.",
-                "parameters": {
-                    "jobId": "optional, Module group ID (e.g., 89494)",
-                    "lang": "optional, Response language (FR, DE, IT)",
-                    "year": "optional, Year of the modules (e.g., 2024)"
-                },
+                "parameters": [
+                    "jobId",
+                    "lang" ,
+                    "year"
+                ]
             },
             {
                 "url": "/modules/{moduleId}",
                 "method": "GET",
-                "description": "Retrieve detailed information for a specific module by Number.",
-                "parameters": {
-                    "lang": "optional, Response language (FR, DE, IT)",
-                    "year": "optional, Year of the modules (e.g., 2024)"
-                },
+                "parameters": [
+                    "lang",
+                    "year"
+                ],
             }
         ]
     });
