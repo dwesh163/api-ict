@@ -4,9 +4,15 @@ This API allows you to list all ICT modules
 
 ## API Endpoints
 
-### 1. Get List of Job
+### 1. Get Documentation
 
--   **URL:** `/api/modules/job`
+-   **URL:** `/`
+-   **Method:** `GET`
+-   **Description:** Retrieve the API documentation for available routes and usage.
+
+### 2. Get List of Job
+
+-   **URL:** `/jobs`
 -   **Method:** `GET`
 -   **Description:** Retrieve a list of Job with their IDs.
 -   **Response:**
@@ -17,9 +23,9 @@ This API allows you to list all ICT modules
     ]
     ```
 
-### 2. Get all modules
+### 3. Get all modules
 
--   **URL:** `/api/modules`
+-   **URL:** `/modules`
 -   **Method:** `GET`
 -   **Description:** Get a list of modules filtered by _job ID_.
 -   **Parameters:**
@@ -34,9 +40,9 @@ This API allows you to list all ICT modules
     ]
     ```
 
-### 3. Get Module Details
+### 4. Get Module Details
 
--   **URL:** `/api/modules/{moduleId}`
+-   **URL:** `/modules/{moduleNumber}`
 -   **Method:** `GET`
 -   **Description:** Retrieve detailed information for a specific module by _Number_.
 -   **Parameters:**
