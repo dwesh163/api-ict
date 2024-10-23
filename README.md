@@ -42,9 +42,9 @@ This API allows you to list all ICT modules
 
 ### 4. Get Module Details
 
--   **URL:** `/modules/{moduleNumber}`
+-   **URL:** `/modules/{moduleId}`
 -   **Method:** `GET`
--   **Description:** Retrieve detailed information for a specific module by _Number_.
+-   **Description:** Retrieve detailed information for a specific module by _ID_.
 -   **Parameters:**
     -   lang (optional): Response language (FR, DE, IT).
     -   year (optional): Year of the modules (e.g., 2024).
