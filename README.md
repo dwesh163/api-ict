@@ -74,9 +74,9 @@ docker run -d -p 8000:8000 --name api-ict dwesh163/api-ict
 
 You can customize the deployment with the following environment variables:
 
-`DISABLE_CACHE`: Set to `True` to disable caching. (default is `FALSE`)
-`DEFAULT_LANGUAGE`: Specify the default language (e.g., `FR` for French, default is `DE`).
-`PORT`: Set the port on which the application will run (default is `8000`).
+-   `DISABLE_CACHE`: Set to `True` to disable caching. (default is `FALSE`)
+-   `DEFAULT_LANGUAGE`: Specify the default language (e.g., `FR` for French, default is `DE`).
+-   `PORT`: Set the port on which the application will run (default is `8000`).
 
 ### Example Command with Optional Parameters
 
