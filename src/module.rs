@@ -124,11 +124,6 @@ pub async fn get_module(
         id
     );
 
-    println!(
-        "curl -X GET \"{}\" -H \"Authorization: Bearer {}\"",
-        url, token
-    );
-
     let res = client.get(&url).bearer_auth(token).send().await?;
     let api_response: ApiResponse = res.json().await?;
 
