@@ -145,3 +145,17 @@ pub async fn get_jobs(lang: &Option<String>) -> Result<Value, Box<dyn std::error
     Ok(json!(jobs_translated))
 }
 
+pub async fn get_api_id(job_id: &str) -> Result<Option<String>, Box<dyn std::error::Error>> {
+    if job_id.is_empty() {
+        return Ok(None);
+    }
+
+    let jobs: Vec<Value> = from_str(JOBS)?;
+
+    let job = jobs
+        .iter()
+        .find(|job| job["id"] == job_id)
+        .ok_or("Job not found")?;
+
+    Ok(job["api_id"].as_str().map(|s| s.to_string()))
+}
