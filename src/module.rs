@@ -10,41 +10,6 @@ struct ApiResponse {
     value: Vec<Value>,
 }
 
-pub async fn get_documentation() -> Result<Value, Box<dyn std::error::Error>> {
-    let documentation = json!({
-        "description": "This API allows you to list all ICT modules.",
-        "endpoints": [
-            {
-                "url": "/",
-                "method": "GET",
-            },
-            {
-                "url": "/jobs",
-                "method": "GET",
-            },
-            {
-                "url": "/modules",
-                "method": "GET",
-                "parameters": [
-                    "jobId",
-                    "lang" ,
-                    "year"
-                ]
-            },
-            {
-                "url": "/modules/{moduleId}",
-                "method": "GET",
-                "parameters": [
-                    "lang",
-                    "year"
-                ],
-            }
-        ]
-    });
-
-    Ok(documentation)
-}
-
 pub async fn get_modules(
     lang: &Option<String>,
     year: &Option<String>,

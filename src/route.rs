@@ -1,4 +1,5 @@
-use crate::module::{get_documentation, get_module, get_modules};
+use crate::documentation::get_documentation;
+use crate::module::{get_module, get_modules};
 use actix_web::{get, web, HttpResponse, Responder};
 use serde::Deserialize;
 use serde_json::json;
