@@ -29,7 +29,7 @@ jobs:
                   IFS='.' read -r major minor patch <<< "$latest_release"
 
                   # Incrémenter la version patch
-                  new_version="$major.$minor.$((patch + 1))"
+                  new_version="$major.$minor.$((patch))"
 
                   echo "New version: version : $new_version"
 
