@@ -1,8 +1,9 @@
-use crate::auth;
+use crate::{auth, job};
 use regex::Regex;
 use reqwest;
 use serde::Deserialize;
 use serde_json::{json, Value};
+use std::env;
 use std::error::Error;
 
 #[derive(Debug, Deserialize)]
@@ -13,18 +14,35 @@ struct ApiResponse {
 pub async fn get_modules(
     lang: &Option<String>,
     year: &Option<String>,
+    job_id: &Option<String>,
 ) -> Result<Value, Box<dyn std::error::Error>> {
     let token = auth::get_token().await?;
     let client = reqwest::Client::new();
-    let res = client
-        .get("https://ictbb.crm17.dynamics.com/api/data/v9.1/beembk_modulmappings?$filter=beembk_Abschluss/beembk_abschlussid%20eq%20%2713d8d40b-6d82-eb11-a812-0022486f6f83%27&$expand=beembk_Lernort,beembk_Modul,beembk_Modultyp,beembk_Level")
-        .bearer_auth(token)
-        .send()
-        .await?;
+    let api_id = job::get_api_id(job_id.as_deref().unwrap_or("")).await?;
+    println!("api_id: {:?}", api_id);
+
+    let url = match api_id {
+        Some(id) => format!(
+            "https://ictbb.crm17.dynamics.com/api/data/v9.1/beembk_modulmappings?$filter=beembk_Abschluss/beembk_abschlussid%20eq%20%27{}%27&$expand=beembk_Lernort,beembk_Modul,beembk_Modultyp,beembk_Level",
+            id
+        ),
+        None => String::from(
+            "https://ictbb.crm17.dynamics.com/api/data/v9.1/beembk_modulmappings?$expand=beembk_Lernort,beembk_Modul,beembk_Modultyp,beembk_Level"
+        ),
+    };
+
+    println!("{:?}", url);
+
+    println!("curl -X GET '{}'", url);
+
+    println!("curl -X GET 'https://ictbb.crm17.dynamics.com/api/data/v9.1/beembk_modulmappings?$filter=beembk_Abschluss/beembk_abschlussid%20eq%20%2713d8d40b-6d82-eb11-a812-0022486f6f83%27&$expand=beembk_Lernort,beembk_Modul,beembk_Modultyp,beembk_Level'");
+
+    let res = client.get(url).bearer_auth(token).send().await?;
 
     let api_response: ApiResponse = res.json().await?;
     let re = Regex::new(r"^\d+").unwrap();
-    let lang = lang.as_deref().unwrap_or("de");
+    let default_language = env::var("DEFAULT_LANGUAGE").unwrap_or_else(|_| "de".to_string());
+    let language = lang.as_deref().unwrap_or(&default_language);
 
     let filtered_modules: Vec<Value> = api_response
         .value
@@ -44,7 +62,7 @@ pub async fn get_modules(
                 }
             }
 
-            let (type_key, title_key, description_key) = match lang {
+            let (type_key, title_key, description_key) = match language {
                 "de" => (
                     "beembk_lernortname",
                     "beembk_modultitel",
@@ -111,7 +129,6 @@ pub async fn get_module(id: &str, lang: &Option<String>) -> Result<Value, Box<dy
     );
 
     let res = client.get(&url).bearer_auth(token).send().await?;
-
     let api_response: ApiResponse = res.json().await?;
 
     if api_response.value.is_empty() {
@@ -121,7 +138,8 @@ pub async fn get_module(id: &str, lang: &Option<String>) -> Result<Value, Box<dy
     let module = &api_response.value[0];
 
     let re = Regex::new(r"^\d+").map_err(|e| format!("Invalid regex: {}", e))?;
-    let lang = lang.as_deref().unwrap_or("de");
+    let default_language = env::var("DEFAULT_LANGUAGE").unwrap_or_else(|_| "de".to_string());
+    let language = lang.as_deref().unwrap_or(&default_language);
 
     let level_name = module["beembk_levelname"].as_str().unwrap_or("");
 
@@ -130,7 +148,7 @@ pub async fn get_module(id: &str, lang: &Option<String>) -> Result<Value, Box<dy
         .and_then(|m| m.as_str().parse::<i64>().ok())
         .unwrap_or_default();
 
-    let (type_key, title_key, description_key, competence_key, pdf_key) = match lang {
+    let (type_key, title_key, description_key, competence_key, pdf_key) = match language {
         "de" => (
             "beembk_lernortname",
             "beembk_modultitel",
@@ -170,7 +188,7 @@ pub async fn get_module(id: &str, lang: &Option<String>) -> Result<Value, Box<dy
     let competence = module[competence_key].as_str().unwrap_or("").to_string();
     let pdf = module[pdf_key].as_str().unwrap_or("").to_string();
 
-    let objectives = get_module_objectives(id, lang).await?;
+    let objectives = get_module_objectives(id, language).await?;
 
     Ok(json!({
         "number": number,
