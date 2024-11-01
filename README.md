@@ -29,7 +29,7 @@ This API allows you to list all ICT modules
 -   **Method:** `GET`
 -   **Description:** Get a list of modules filtered by _job ID_.
 -   **Parameters:**
-    -   jobId (optional): Module group ID (e.g., 89494).
+    -   job_id (optional): Module group ID (e.g., 89494).
     -   lang (optional): Response language (FR, DE, IT).
     -   year (optional): Year of the modules (e.g., 2024).
 -   **Response:**
