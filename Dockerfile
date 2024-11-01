@@ -1,15 +1,15 @@
-FROM rust:bookworm as builder
-ARG APP_NAME=api_ict
+FROM rust:latest AS builder
 WORKDIR /srv/app
 COPY Cargo.toml Cargo.lock ./
 COPY src ./src
 RUN cargo build --locked --release
 
-FROM alpine:3.20
-RUN apk add --no-cache libgcc libstdc++ libc6-compat
+FROM ubuntu:24.04
 WORKDIR /app
-COPY --from=builder /srv/app/target/release/$APP_NAME /app/server
+RUN apt update && apt install -y libgcc-s1 libstdc++6 libc6 && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /srv/app/target/release/api_ict /app/server
 RUN chmod +x /app/server
-EXPOSE 8000
 USER 1000
+EXPOSE 8000
+
 CMD ["/app/server"]
