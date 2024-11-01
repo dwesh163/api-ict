@@ -17,21 +17,13 @@ jobs:
               run: |
                   # Récupère la dernière version publiée
                   latest_release=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name || echo "0.1.0")
-                  echo "Latest release: $latest_release"
-
                   # Utilise directement la variable 'latest_release' au lieu de '${{ env.latest_release }}'
                   # Supprimer le préfixe 'v' si présent
                   if [[ $latest_release == v* ]]; then
                     latest_release="${latest_release#v}"
                   fi
 
-                  # Séparer les composantes de version (major, minor, patch)
-                  IFS='.' read -r major minor patch <<< "$latest_release"
-
-                  # Incrémenter la version patch
-                  new_version="$major.$minor.$((patch))"
-
-                  echo "New version: version : $new_version"
+                  echo "Latest release: $latest_release"
 
                   # Exporter la nouvelle version dans l'environnement GitHub
                   echo "new_version=$new_version" >> $GITHUB_ENV
