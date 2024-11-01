@@ -4,7 +4,6 @@ use reqwest;
 use serde::Deserialize;
 use serde_json::{json, Value};
 use std::env;
-use std::error::Error;
 
 #[derive(Debug, Deserialize)]
 struct ApiResponse {
@@ -113,13 +112,21 @@ pub async fn get_modules(
     Ok(json!(filtered_modules))
 }
 
-pub async fn get_module(id: &str, lang: &Option<String>) -> Result<Value, Box<dyn Error>> {
+pub async fn get_module(
+    id: &str,
+    lang: &Option<String>,
+) -> Result<Value, Box<dyn std::error::Error>> {
     let token = auth::get_token().await?;
     let client = reqwest::Client::new();
 
     let url = format!(
         "https://ictbb.crm17.dynamics.com/api/data/v9.1/beembk_moduls?$filter=contains(beembk_modulnummer,'{}')",
         id
+    );
+
+    println!(
+        "curl -X GET \"{}\" -H \"Authorization: Bearer {}\"",
+        url, token
     );
 
     let res = client.get(&url).bearer_auth(token).send().await?;
