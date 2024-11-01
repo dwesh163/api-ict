@@ -1,4 +1,5 @@
 use crate::documentation::get_documentation;
+use crate::job::get_jobs;
 use crate::module::{get_module, get_modules};
 use actix_web::{get, web, HttpResponse, Responder};
 use serde::Deserialize;
@@ -27,10 +28,21 @@ async fn index() -> impl Responder {
 }
 
 #[get("/jobs")]
-async fn job() -> impl Responder {
+async fn jobs(query: web::Query<QueryParams>) -> impl Responder {
+    let jobs = match get_jobs(&query.lang).await {
+        Ok(jobs) => jobs,
+        Err(err) => {
+            eprintln!("Error fetching jobs: {:?}", err);
+
+            return HttpResponse::InternalServerError()
+                .content_type("application/json")
+                .json(json!({ "error": "Error fetching jobs" }));
+        }
+    };
+
     HttpResponse::Ok()
         .content_type("application/json")
-        .json(json!({ "message": "Job started" }))
+        .json(jobs)
 }
 
 #[get("/modules")]
