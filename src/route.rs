@@ -9,6 +9,7 @@ use serde_json::json;
 pub struct QueryParams {
     pub lang: Option<String>,
     pub year: Option<String>,
+    pub job_id: Option<String>,
 }
 
 #[get("/")]
@@ -47,7 +48,7 @@ async fn jobs(query: web::Query<QueryParams>) -> impl Responder {
 
 #[get("/modules")]
 async fn modules(query: web::Query<QueryParams>) -> impl Responder {
-    let modules = match get_modules(&query.lang, &query.year).await {
+    let modules = match get_modules(&query.lang, &query.year, &query.job_id).await {
         Ok(modules) => modules,
         Err(err) => {
             eprintln!("Error fetching module: {:?}", err);
@@ -89,5 +90,5 @@ pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(index)
         .service(module_by_id)
         .service(modules)
-        .service(job);
+        .service(jobs);
 }
