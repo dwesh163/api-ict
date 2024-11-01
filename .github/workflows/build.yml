@@ -26,7 +26,7 @@ jobs:
                   echo "Latest release: $latest_release"
 
                   # Exporter la nouvelle version dans l'environnement GitHub
-                  echo "new_version=$new_version" >> $GITHUB_ENV
+                  echo "latest_release=$latest_release" >> $GITHUB_ENV
 
             - name: Convert repository name to lowercase
               run: echo "repository_name=$(echo '${{ github.event.repository.name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
@@ -45,5 +45,5 @@ jobs:
               with:
                   push: true
                   tags: |
-                      ${{ github.repository_owner }}/${{ env.repository_name }}:${{ env.new_version }}
+                      ${{ github.repository_owner }}/${{ env.repository_name }}:${{ env.latest_release }}
                       ${{ github.repository_owner }}/${{ env.repository_name }}:latest
