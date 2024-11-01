@@ -31,12 +31,6 @@ pub async fn get_modules(
         ),
     };
 
-    println!("{:?}", url);
-
-    println!("curl -X GET '{}'", url);
-
-    println!("curl -X GET 'https://ictbb.crm17.dynamics.com/api/data/v9.1/beembk_modulmappings?$filter=beembk_Abschluss/beembk_abschlussid%20eq%20%2713d8d40b-6d82-eb11-a812-0022486f6f83%27&$expand=beembk_Lernort,beembk_Modul,beembk_Modultyp,beembk_Level'");
-
     let res = client.get(url).bearer_auth(token).send().await?;
 
     let api_response: ApiResponse = res.json().await?;
