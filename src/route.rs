@@ -64,11 +64,12 @@ async fn modules(query: web::Query<QueryParams>) -> impl Responder {
         .json(modules)
 }
 
-#[get("/module/{id}")]
+#[get("/modules/{id}")]
 async fn module_by_id(id: web::Path<String>, query: web::Query<QueryParams>) -> impl Responder {
     let module = match get_module(&id.into_inner(), &query.lang).await {
         Ok(module) => module,
         Err(err) => {
+            eprintln!("Error fetching module: {:?}", err);
             if err.to_string() == "Module not found" {
                 return HttpResponse::NotFound()
                     .content_type("application/json")
