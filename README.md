@@ -47,7 +47,6 @@ This API allows you to list all ICT modules
 -   **Description:** Retrieve detailed information for a specific module by _ID_.
 -   **Parameters:**
     -   lang (optional): Response language (FR, DE, IT).
-    -   year (optional): Year of the modules (e.g., 2024).
 -   **Response:**
     ```json
     {
