@@ -6,6 +6,7 @@ RUN cargo build --locked --release
 
 FROM ubuntu:24.04
 WORKDIR /app
+RUN mkdir /app/.cache && chown 1000:1000 /app/.cache
 RUN apt update && apt install -y --no-install-recommends libgcc-s1 libstdc++6 libc6 ca-certificates && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /srv/app/target/release/api_ict /app/server
 RUN chmod +x /app/server
