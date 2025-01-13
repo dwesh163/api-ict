@@ -48,7 +48,7 @@ jobs:
               id: meta
               uses: docker/metadata-action@v5
               with:
-                  images: ${{ github.repository_owner }}/${{ github.repository }}
+                  images: ${{ github.repository_owner }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')
                   tags: |
                       latest,
                       ${{ needs.get-version.outputs.version }}
@@ -58,7 +58,7 @@ jobs:
               with:
                   context: .
                   push: true
-                  tags: ${{ github.repository }}:latest,${{ github.repository }}:${{ needs.get-version.outputs.version }}
+                  tags: $(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):latest,$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${{ needs.get-version.outputs.version }}
                   labels: ${{ steps.meta.outputs.labels }}
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
@@ -85,11 +85,11 @@ jobs:
                   version="${{ needs.get-version.outputs.version }}"
 
                   if ! gh release create "$version" \
-                    --repo="${{ github.repository }}" \
+                    --repo="$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" \
                     --title="$version" \
                     --generate-notes; then
                     
-                    if gh release view "$version" --repo ${{ github.repository }} &>/dev/null; then
+                    if gh release view "$version" --repo $(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]') &>/dev/null; then
                       echo "Release $version already exists, treating as success"
                       exit 0
                     else
