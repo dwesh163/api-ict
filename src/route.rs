@@ -28,6 +28,13 @@ async fn index() -> impl Responder {
     }
 }
 
+#[get("/jobs/")]
+async fn job_redirect() -> impl Responder {
+    HttpResponse::MovedPermanently()
+        .append_header(("Location", "/jobs"))
+        .finish()
+}
+
 #[get("/jobs")]
 async fn jobs(query: web::Query<QueryParams>) -> impl Responder {
     let jobs = match get_jobs(&query.lang).await {
@@ -44,6 +51,13 @@ async fn jobs(query: web::Query<QueryParams>) -> impl Responder {
     HttpResponse::Ok()
         .content_type("application/json")
         .json(jobs)
+}
+
+#[get("/modules/")]
+async fn modules_redirect() -> impl Responder {
+    HttpResponse::MovedPermanently()
+        .append_header(("Location", "/modules"))
+        .finish()
 }
 
 #[get("/modules")]
@@ -91,5 +105,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(index)
         .service(module_by_id)
         .service(modules)
-        .service(jobs);
+        .service(modules_redirect)
+        .service(jobs)
+        .service(job_redirect);
 }
