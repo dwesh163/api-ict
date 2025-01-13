@@ -1,4 +1,4 @@
-# API-ICT
+# Api-ICT
 
 This API allows you to list all ICT modules
 
