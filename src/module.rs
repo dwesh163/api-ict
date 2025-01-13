@@ -18,7 +18,6 @@ pub async fn get_modules(
     let token = auth::get_token().await?;
     let client = reqwest::Client::new();
     let api_id = job::get_api_id(job_id.as_deref().unwrap_or("")).await?;
-
     let url = match api_id {
         Some(id) => format!(
             "https://ictbb.crm17.dynamics.com/api/data/v9.1/beembk_modulmappings?$filter=beembk_Abschluss/beembk_abschlussid%20eq%20%27{}%27&$expand=beembk_Lernort,beembk_Modul,beembk_Modultyp,beembk_Level",
@@ -28,18 +27,37 @@ pub async fn get_modules(
             "https://ictbb.crm17.dynamics.com/api/data/v9.1/beembk_modulmappings?$expand=beembk_Lernort,beembk_Modul,beembk_Modultyp,beembk_Level"
         ),
     };
-
     let res = client.get(url).bearer_auth(token).send().await?;
-
     let api_response: ApiResponse = res.json().await?;
     let re = Regex::new(r"^\d+").unwrap();
     let default_language = env::var("DEFAULT_LANGUAGE").unwrap_or_else(|_| "de".to_string());
     let language = lang.as_deref().unwrap_or(&default_language);
 
-    let filtered_modules: Vec<Value> = api_response
-        .value
-        .iter()
-        .filter_map(|module| {
+    use std::collections::HashMap;
+    let mut modules_by_number: HashMap<i64, Vec<&Value>> = HashMap::new();
+
+    for module in api_response.value.iter() {
+        if let Some(number) = module["beembk_Modul"]["beembk_modulnummer"]
+            .as_str()
+            .and_then(|n| n.parse::<i64>().ok())
+        {
+            modules_by_number.entry(number).or_default().push(module);
+        }
+    }
+
+    let filtered_modules: Vec<Value> = modules_by_number
+        .into_iter()
+        .filter_map(|(_, mut modules)| {
+            modules.sort_by(|a, b| {
+                let version_a = a["beembk_Modul"]["versionnumber"].as_f64().unwrap_or(0.0);
+                let version_b = b["beembk_Modul"]["versionnumber"].as_f64().unwrap_or(0.0);
+                version_b
+                    .partial_cmp(&version_a)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+            });
+
+            let module = modules.first()?;
+
             let level_name = module["beembk_Level"]["beembk_levelname"]
                 .as_str()
                 .unwrap_or("");
@@ -78,12 +96,10 @@ pub async fn get_modules(
                 .unwrap_or("")
                 .parse::<i64>()
                 .unwrap_or_default();
-
             let name = module["beembk_Modul"][title_key].as_str().unwrap_or("");
             let version = module["beembk_Modul"]["beembk_version"]
                 .as_i64()
                 .unwrap_or_default();
-
             let last_modified = module["beembk_Modul"]["modifiedon"].as_str().unwrap_or("");
             let creation_date = module["beembk_Modul"]["createdon"].as_str().unwrap_or("");
             let r#type = module["beembk_Lernort"][type_key].as_str().unwrap_or("");
