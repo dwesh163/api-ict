@@ -18,7 +18,6 @@ pub async fn get_modules(
     let token = auth::get_token().await?;
     let client = reqwest::Client::new();
     let api_id = job::get_api_id(job_id.as_deref().unwrap_or("")).await?;
-    println!("api_id: {:?}", api_id);
 
     let url = match api_id {
         Some(id) => format!(
