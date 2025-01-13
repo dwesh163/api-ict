@@ -1,35 +1,42 @@
-name: Build Docker Image
+name: Build Docker image and Create Release
 
 on:
     push:
         branches:
             - main
+
 jobs:
-    build:
-        runs-on: ubuntu-latest
+    get-version:
+        runs-on: ubuntu-24.04
+        outputs:
+            version: ${{ steps.get_version.outputs.version }}
 
         steps:
-            - name: Checkout code
+            - name: Checkout repository
               uses: actions/checkout@v4
 
-            - name: Get Latest Release
-              id: get_release
+            - name: Get Version from Cargo.toml
+              id: get_version
               run: |
-                  # Récupère la dernière version publiée
-                  latest_release=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name || echo "0.1.0")
-                  # Utilise directement la variable 'latest_release' au lieu de '${{ env.latest_release }}'
-                  # Supprimer le préfixe 'v' si présent
-                  if [[ $latest_release == v* ]]; then
-                    latest_release="${latest_release#v}"
-                  fi
+                  version=$(awk -F ' = ' '/^version/ {print $2}' Cargo.toml | tr -d '"')
+                  echo "Version from Cargo.toml: $version"
+                  echo "version=$version" >> $GITHUB_OUTPUT
 
-                  echo "Latest release: $latest_release"
+    build:
+        needs: get-version
+        runs-on: ubuntu-24.04
+        permissions:
+            contents: read
+            packages: write
 
-                  # Exporter la nouvelle version dans l'environnement GitHub
-                  echo "latest_release=$latest_release" >> $GITHUB_ENV
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
 
-            - name: Convert repository name to lowercase
-              run: echo "repository_name=$(echo '${{ github.event.repository.name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+              with:
+                  install: true
 
             - name: Login to Docker Hub
               uses: docker/login-action@v3
@@ -37,13 +44,56 @@ jobs:
                   username: ${{ github.repository_owner }}
                   password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-            - name: Set up Docker Buildx
-              uses: docker/setup-buildx-action@v3
-
-            - name: Build and Push Docker Image
-              uses: docker/build-push-action@v6
+            - name: Extract Docker metadata
+              id: meta
+              uses: docker/metadata-action@v5
               with:
-                  push: true
+                  images: ${{ github.repository_owner }}/${{ github.repository }}
                   tags: |
-                      ${{ github.repository_owner }}/${{ env.repository_name }}:${{ env.latest_release }}
-                      ${{ github.repository_owner }}/${{ env.repository_name }}:latest
+                      latest,
+                      ${{ needs.get-version.outputs.version }}
+
+            - name: Build and push Docker image
+              uses: docker/build-push-action@v5
+              with:
+                  context: .
+                  push: true
+                  tags: ${{ github.repository }}:latest,${{ github.repository }}:${{ needs.get-version.outputs.version }}
+                  labels: ${{ steps.meta.outputs.labels }}
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
+
+    create-release:
+        needs: [get-version, build]
+        runs-on: ubuntu-24.04
+        permissions:
+            contents: write
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Set up GitHub CLI
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 22
+
+            - name: Create Release
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  version="${{ needs.get-version.outputs.version }}"
+
+                  if ! gh release create "$version" \
+                    --repo="${{ github.repository }}" \
+                    --title="$version" \
+                    --generate-notes; then
+                    
+                    if gh release view "$version" --repo ${{ github.repository }} &>/dev/null; then
+                      echo "Release $version already exists, treating as success"
+                      exit 0
+                    else
+                      echo "Failed to create release and release doesn't exist"
+                      exit 1
+                    fi
+                  fi
