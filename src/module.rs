@@ -126,16 +126,17 @@ pub async fn get_module(
         return Err("Module not found".into());
     }
 
-    let modules = &api_response.value.len();
-
-    let module = &api_response.value[0];
-
+    let module = api_response
+        .value
+        .iter()
+        .max_by_key(|module| module["versionnumber"].as_i64().unwrap_or(0))
+        .ok_or("No modules found")?;
     let default_language = env::var("DEFAULT_LANGUAGE").unwrap_or_else(|_| "de".to_string());
     let language = lang.as_deref().unwrap_or(&default_language);
 
     let module_detail = get_module_detail(id, lang).await?;
-    let module_year = module_detail["year"].as_i64().unwrap_or_default();
-    let module_type = module_detail["type"].as_str().unwrap_or("").to_string();
+    let year = module_detail["year"].as_i64().unwrap_or_default();
+    let r#type = module_detail["type"].as_str().unwrap_or("").to_string();
 
     let (title_key, description_key, competence_key, pdf_key) = match language {
         "de" => (
@@ -179,8 +180,8 @@ pub async fn get_module(
         "number": number,
         "description": description,
         "name": name,
-        "year": module_year,
-        "type": module_type,
+        "year": year,
+        "type": r#type,
         "version": version,
         "last_modified": last_modified,
         "creation_date": creation_date,
@@ -208,9 +209,13 @@ async fn get_module_detail(
         return Err("Module not found".into());
     }
 
-    let module = &api_response.value[0];
-    let re = Regex::new(r"^\d+").map_err(|e| format!("Invalid regex: {}", e))?;
+    let module = api_response
+        .value
+        .iter()
+        .max_by_key(|module| module["versionnumber"].as_i64().unwrap_or(0))
+        .ok_or("No modules found")?;
 
+    let re = Regex::new(r"^\d+").map_err(|e| format!("Invalid regex: {}", e))?;
     let level_name = module["beembk_Level"]["beembk_levelname"]
         .as_str()
         .unwrap_or("");
