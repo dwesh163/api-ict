@@ -176,7 +176,13 @@ pub async fn get_modules(
                     .unwrap_or_default();
                 let last_modified = module["beembk_Modul"]["modifiedon"].as_str().unwrap_or("");
                 let creation_date = module["beembk_Modul"]["createdon"].as_str().unwrap_or("");
-                let r#type = module["beembk_Lernort"][type_key].as_str().unwrap_or("");
+                let r#type = module["beembk_Lernort"][type_key]
+                    .as_str()
+                    .unwrap_or("")
+                    .chars()
+                    .next()
+                    .map(|c| c.to_uppercase().collect::<String>() + &module["beembk_Lernort"][type_key].as_str().unwrap_or("").chars().skip(1).collect::<String>())
+                    .unwrap_or_default();
                 let description = module["beembk_Modul"][description_key]
                     .as_str()
                     .unwrap_or("");
